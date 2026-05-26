@@ -29,29 +29,6 @@ const pool = mysql.createPool({
 
 const db = pool.promise();
 
-// --- AUTOMATED TABLE INITIALIZATION ---
-// This safely generates your table in Aiven when Render deploys the app
-async function initializeDatabase() {
-    try {
-        const createTableQuery = `
-            CREATE TABLE IF NOT EXISTS students (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                student_id VARCHAR(50) NOT NULL UNIQUE,
-                full_name VARCHAR(100) NOT NULL,
-                course VARCHAR(100) NOT NULL,
-                year_level VARCHAR(20) NOT NULL,
-                email_address VARCHAR(100) NOT NULL UNIQUE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `;
-        await db.query(createTableQuery);
-        console.log('Database table "students" verified or created successfully.');
-    } catch (error) {
-        console.error('Error during database table initialization:', error);
-    }
-}
-initializeDatabase();
-
 // --- ROUTING FRONTEND PAGES ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'views', 'register.html')));

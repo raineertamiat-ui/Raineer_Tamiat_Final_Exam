@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Student List</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav><a href="/">Home</a> | <a href="/register">Register Student</a> | <a href="/students-page">Student List</a></nav>
+    <div class="container">
+        <h2>Registered Students</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th><th>Full Name</th><th>Course</th><th>Year Level</th><th>Email</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody"></tbody>
+        </table>
+    </div>
+    <script src="/js/main.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', fetchStudents);</script>
+</body>
+</html>

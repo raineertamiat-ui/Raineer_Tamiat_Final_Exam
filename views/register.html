@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Register Student</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav><a href="/">Home</a> | <a href="/register">Register Student</a> | <a href="/students-page">Student List</a></nav>
+    <div class="container">
+        <h2>Student Registration Form</h2>
+        <form id="regForm">
+            <input type="text" id="student_id" placeholder="Student ID (e.g. 2026-0001)" required>
+            <input type="text" id="full_name" placeholder="Full Name" required>
+            <input type="text" id="course" placeholder="Course" required>
+            <select id="year_level" required>
+                <option value="">Select Year Level</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+            <input type="email" id="email_address" placeholder="Email Address" required>
+            <button type="submit">Submit Registration</button>
+        </form>
+    </div>
+    <script src="/js/main.js"></script>
+</body>
+</html>

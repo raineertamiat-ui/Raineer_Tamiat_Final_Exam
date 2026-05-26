@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Edit Student</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav><a href="/">Home</a> | <a href="/register">Register Student</a> | <a href="/students-page">Student List</a></nav>
+    <div class="container">
+        <h2>Edit Student Information</h2>
+        <form id="editForm">
+            <input type="text" id="edit_student_id" placeholder="Student ID" required>
+            <input type="text" id="edit_full_name" placeholder="Full Name" required>
+            <input type="text" id="edit_course" placeholder="Course" required>
+            <select id="edit_year_level" required>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+            </select>
+            <input type="email" id="edit_email_address" placeholder="Email Address" required>
+            <button type="submit">Update Records</button>
+        </form>
+    </div>
+    <script src="/js/main.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', populateEditForm);</script>
+</body>
+</html>

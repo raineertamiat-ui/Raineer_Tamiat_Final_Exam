@@ -1,23 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Student List</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMS - Records Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-    <nav><a href="/">Home</a> | <a href="/register">Register Student</a> | <a href="/students-page">Student List</a></nav>
-    <div class="container">
-        <h2>Registered Students</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Student ID</th><th>Full Name</th><th>Course</th><th>Year Level</th><th>Email</th><th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="studentTableBody"></tbody>
-        </table>
-    </div>
+<body class="text-gray-200 font-sans antialiased">
+    <nav class="glass-card sticky top-0 z-50 px-6 py-4 mb-12 shadow-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <span class="font-bold text-xl tracking-wider text-white">STUDENT HUB</span>
+            <div class="flex space-x-6 text-sm font-medium">
+                <a href="/" class="hover:text-indigo-400 transition-colors">Home</a>
+                <a href="/list" class="text-indigo-400 font-semibold">Student List</a>
+                <a href="/register" class="hover:text-indigo-400 transition-colors">Register Form</a>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">Student Information Table</h1>
+                <p class="text-sm text-gray-400 mt-1">Operational view of real-time cloud data arrays.</p>
+            </div>
+            <a href="/register" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-indigo-600/30">+ Add Entry</a>
+        </div>
+        <div class="glass-card rounded-2xl overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-white/10 bg-white/5 text-xs font-semibold uppercase tracking-wider text-indigo-300">
+                            <th class="px-6 py-4">Student ID</th>
+                            <th class="px-6 py-4">Full Name</th>
+                            <th class="px-6 py-4">Course</th>
+                            <th class="px-6 py-4">Year Level</th>
+                            <th class="px-6 py-4">Email Address</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody" class="divide-y divide-white/5 text-sm">
+                        </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="hidden py-12 text-center text-gray-400">
+                No database collections located. Setup alternative registration nodes.
+            </div>
+        </div>
+    </main>
     <script src="/js/main.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', fetchStudents);</script>
 </body>
 </html>

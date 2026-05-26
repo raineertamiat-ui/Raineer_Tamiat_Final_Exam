@@ -1,107 +1,113 @@
-require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middleware for parsing requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'views')));
 
-// Aiven MySQL Connection Pool
-const pool = mysql.createPool({
+// Serve Static Assets out of the 'public' folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Database Connection with Aiven SSL Requirements
+const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
+    database: process.env.DB_NAME || 'defaultdb',
+    port: process.env.DB_PORT || 25060,
     ssl: {
-        rejectUnauthorized: false // Required for secure Aiven SSL connections
+        rejectUnauthorized: false
     }
 });
 
-const db = pool.promise();
+db.connect((err) => {
+    if (err) {
+        console.error('Error connecting to Aiven MySQL:', err.message);
+        return;
+    }
+    console.log('Successfully connected to Aiven Cloud Database.');
+});
 
-// --- ROUTING FRONTEND PAGES ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
-app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'views', 'register.html')));
-app.get('/students-page', (req, res) => res.sendFile(path.join(__dirname, 'views', 'list.html')));
-app.get('/edit-page', (req, res) => res.sendFile(path.join(__dirname, 'views', 'edit.html')));
+// ==================== HTML VIEW ROUTING ====================
 
-// --- API ROUTES (CRUD OPERATIONS) ---
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
 
-// 1. CREATE: Add a new student record
-app.post('/api/students', async (req, res) => {
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'register.html'));
+});
+
+app.get('/list', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'list.html'));
+});
+
+app.get('/edit', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'edit.html'));
+});
+
+// ==================== BACKEND API ENDPOINTS (CRUD) ====================
+
+// READ ALL
+app.get('/api/students', (req, res) => {
+    const sql = 'SELECT * FROM students ORDER BY created_at DESC';
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// READ SINGLE
+app.get('/api/students/:id', (req, res) => {
+    const sql = 'SELECT * FROM students WHERE id = ?';
+    db.query(sql, [req.params.id], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (results.length === 0) return res.status(404).json({ error: 'Student not found' });
+        res.json(results[0]);
+    });
+});
+
+// CREATE
+app.post('/api/students', (req, res) => {
     const { student_id, full_name, course, year_level, email_address } = req.body;
-    try {
-        const [result] = await db.query(
-            'INSERT INTO students (student_id, full_name, course, year_level, email_address) VALUES (?, ?, ?, ?, ?)',
-            [student_id, full_name, course, year_level, email_address]
-        );
-        res.status(201).json({ message: 'Student registered successfully!', studentId: result.insertId });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Database error occurred or Student ID/Email already exists.' });
+    if (!student_id || !full_name || !course || !year_level || !email_address) {
+        return res.status(400).json({ error: 'All structural fields are required.' });
     }
+
+    const sql = 'INSERT INTO students (student_id, full_name, course, year_level, email_address) VALUES (?, ?, ?, ?, ?)';
+    db.query(sql, [student_id, full_name, course, year_level, email_address], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ message: 'Student registered successfully', id: result.insertId });
+    });
 });
 
-// 2. READ: Fetch all student records
-app.get('/api/students', async (req, res) => {
-    try {
-        const [rows] = await db.query('SELECT * FROM students');
-        res.status(200).json(rows);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to retrieve students.' });
-    }
-});
-
-// 2b. READ: Fetch a single student record by primary ID (Used for updating)
-app.get('/api/students/:id', async (req, res) => {
-    try {
-        const [rows] = await db.query('SELECT * FROM students WHERE id = ?', [req.params.id]);
-        if (rows.length === 0) return res.status(404).json({ error: 'Student not found' });
-        res.status(200).json(rows[0]);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Database error.' });
-    }
-});
-
-// 3. UPDATE: Alter information of an existing student
-app.put('/api/students/:id', async (req, res) => {
+// UPDATE
+app.put('/api/students/:id', (req, res) => {
     const { student_id, full_name, course, year_level, email_address } = req.body;
-    try {
-        await db.query(
-            'UPDATE students SET student_id = ?, full_name = ?, course = ?, year_level = ?, email_address = ? WHERE id = ?',
-            [student_id, full_name, course, year_level, email_address, req.params.id]
-        );
-        res.status(200).json({ message: 'Student updated successfully!' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to update student.' });
-    }
+    const sql = 'UPDATE students SET student_id = ?, full_name = ?, course = ?, year_level = ?, email_address = ? WHERE id = ?';
+    
+    db.query(sql, [student_id, full_name, course, year_level, email_address, req.params.id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Record variant match missing.' });
+        res.json({ message: 'Student record updated successfully' });
+    });
 });
 
-// 4. DELETE: Drop a student record entirely
-app.delete('/api/students/:id', async (req, res) => {
-    try {
-        await db.query('DELETE FROM students WHERE id = ?', [req.params.id]);
-        res.status(200).json({ message: 'Student record deleted successfully.' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to delete student.' });
-    }
+// DELETE
+app.delete('/api/students/:id', (req, res) => {
+    const sql = 'DELETE FROM students WHERE id = ?';
+    db.query(sql, [req.params.id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Target record untraceable.' });
+        res.json({ message: 'Student record deleted successfully' });
+    });
 });
 
-// --- START APP SERVER ---
 app.listen(PORT, () => {
-    console.log(`Server running smoothly on port ${PORT}`);
+    console.log(`Server environment processing live on port ${PORT}`);
 });
